@@ -1,0 +1,154 @@
+  1. BEGIN customers_api.update_customer(:1,:2,:3,:4); END; ['3', 'Initech', '800', 'N']
+     → OK
+  2. BEGIN customers_api.update_customer(:1,:2,:3,:4); END; ['1', 'Acme Corp', '800', 'Y']
+     → OK
+  3. BEGIN customers_api.update_customer(:1,:2,:3,:4); END; ['3', 'Initech', '800', 'N']
+     → OK
+  4. BEGIN customers_api.update_customer(:1,:2,:3,:4); END; ['2', 'Globex', '3000', 'Y']
+     → OK
+  5. BEGIN orders_api.create_order(:1,:2,:3,:4,:5); END; ['1', NULL, '9', '.004']
+     → ORA-20001: Product is required
+  6. BEGIN orders_api.ship_order(:1); END; ['2']
+     → ORA-20004: Only NEW orders can be shipped (order is SHIPPED)
+  7. BEGIN customers_api.create_customer(:1,:2,:3); END; ['Umbrella', '-1']
+     → ORA-20001: Credit limit must be zero or positive
+  8. BEGIN orders_api.create_order(:1,:2,:3,:4,:5); END; ['2', 'Widget', '2.5', '100']
+     → ORA-20001: Quantity must be a positive whole number
+  9. BEGIN customers_api.create_customer(:1,:2,:3); END; ['Stark ', '-1']
+     → ORA-20001: Credit limit must be zero or positive
+ 10. BEGIN orders_api.ship_order(:1); END; ['2']
+     → ORA-20004: Only NEW orders can be shipped (order is SHIPPED)
+ 11. BEGIN customers_api.delete_customer(:1); END; ['2']
+     → ORA-20005: Customer has 1 order(s) and cannot be deleted
+ 12. BEGIN orders_api.create_order(:1,:2,:3,:4,:5); END; ['2', 'Nut', '12', '5']
+     → OK, out :5 = 100
+ 13. BEGIN orders_api.ship_order(:1); END; ['1']
+     → OK
+ 14. BEGIN customers_api.create_customer(:1,:2,:3); END; ['Umbrella', '2500']
+     → OK, out :3 = 100
+ 15. BEGIN orders_api.update_order(:1,:2,:3,:4); END; ['1', 'Widget', '11', '20']
+     → ORA-20004: Only NEW orders can be changed (order is SHIPPED)
+ 16. BEGIN customers_api.create_customer(:1,:2,:3); END; ['Globex', '0']
+     → ORA-20007: Customer "Globex" already exists
+ 17. BEGIN orders_api.update_order(:1,:2,:3,:4); END; ['3', 'Sprocket', '2', '100']
+     → ORA-20004: Only NEW orders can be changed (order is CANCELLED)
+ 18. BEGIN orders_api.cancel_order(:1); END; ['100']
+     → OK
+ 19. BEGIN orders_api.create_order(:1,:2,:3,:4,:5); END; ['1', NULL, '9', '5']
+     → ORA-20001: Product is required
+ 20. BEGIN orders_api.create_order(:1,:2,:3,:4,:5); END; ['1', 'Widget', '50', '.004']
+     → OK, out :5 = 101
+ 21. BEGIN orders_api.ship_order(:1); END; ['2']
+     → ORA-20004: Only NEW orders can be shipped (order is SHIPPED)
+ 22. BEGIN orders_api.delete_order(:1); END; ['101']
+     → OK
+ 23. BEGIN orders_api.create_order(:1,:2,:3,:4,:5); END; ['100', 'Gear', '50', '.004']
+     → OK, out :5 = 102
+ 24. BEGIN orders_api.create_order(:1,:2,:3,:4,:5); END; ['2', 'Bolt', '2.5', '5']
+     → ORA-20001: Quantity must be a positive whole number
+ 25. BEGIN orders_api.create_order(:1,:2,:3,:4,:5); END; ['1', 'Bolt', '3', '100']
+     → ORA-20002: Credit limit exceeded: open orders would total 970.00 but limit is 800.00
+ 26. BEGIN orders_api.delete_order(:1); END; ['102']
+     → OK
+ 27. BEGIN orders_api.ship_order(:1); END; ['3']
+     → ORA-20004: Only NEW orders can be shipped (order is CANCELLED)
+ 28. BEGIN customers_api.create_customer(:1,:2,:3); END; ['Stark ', '0']
+     → OK, out :3 = 102
+ 29. BEGIN customers_api.create_customer(:1,:2,:3); END; ['Globex', '2500']
+     → ORA-20007: Customer "Globex" already exists
+ 30. BEGIN orders_api.delete_order(:1); END; ['1']
+     → ORA-20004: Shipped orders cannot be deleted
+ 31. BEGIN customers_api.create_customer(:1,:2,:3); END; ['Hooli', '2500']
+     → OK, out :3 = 104
+ 32. BEGIN orders_api.create_order(:1,:2,:3,:4,:5); END; ['100', 'Widget', '50', '19.99']
+     → OK, out :5 = 104
+ 33. BEGIN customers_api.delete_customer(:1); END; ['3']
+     → OK
+ 34. BEGIN customers_api.delete_customer(:1); END; ['104']
+     → OK
+ 35. BEGIN orders_api.create_order(:1,:2,:3,:4,:5); END; ['100', 'Nut', '12', '100']
+     → OK, out :5 = 105
+ 36. BEGIN orders_api.create_order(:1,:2,:3,:4,:5); END; ['102', 'Bolt', '3', '0']
+     → ORA-20001: Unit price must be positive
+ 37. BEGIN orders_api.create_order(:1,:2,:3,:4,:5); END; ['100', ' Spring ', '0', '5']
+     → ORA-20001: Quantity must be a positive whole number
+ 38. BEGIN orders_api.delete_order(:1); END; ['2']
+     → ORA-20004: Shipped orders cannot be deleted
+ 39. BEGIN orders_api.create_order(:1,:2,:3,:4,:5); END; ['100', 'Bolt', '60', '250']
+     → ORA-20002: Credit limit exceeded: open orders would total 15539.55 but limit is 2500.00
+ 40. BEGIN orders_api.ship_order(:1); END; ['3']
+     → ORA-20004: Only NEW orders can be shipped (order is CANCELLED)
+ 41. BEGIN orders_api.ship_order(:1); END; ['2']
+     → ORA-20004: Only NEW orders can be shipped (order is SHIPPED)
+ 42. BEGIN orders_api.create_order(:1,:2,:3,:4,:5); END; ['100', 'Bolt', '12', '0']
+     → ORA-20001: Unit price must be positive
+ 43. BEGIN orders_api.create_order(:1,:2,:3,:4,:5); END; ['102', NULL, '9', '5']
+     → ORA-20001: Product is required
+ 44. BEGIN orders_api.create_order(:1,:2,:3,:4,:5); END; ['1', 'Widget', '10', '5']
+     → OK, out :5 = 107
+ 45. BEGIN orders_api.cancel_order(:1); END; ['107']
+     → OK
+ 46. BEGIN customers_api.update_customer(:1,:2,:3,:4); END; ['2', 'Globex', '3000', 'N']
+     → OK
+ 47. BEGIN orders_api.update_order(:1,:2,:3,:4); END; ['2', 'Gadget', '11', '50']
+     → ORA-20004: Only NEW orders can be changed (order is SHIPPED)
+ 48. BEGIN customers_api.update_customer(:1,:2,:3,:4); END; ['1', 'Acme Corp', '800', 'Y']
+     → OK
+ 49. BEGIN orders_api.update_order(:1,:2,:3,:4); END; ['100', 'Nut', '51', '5']
+     → ORA-20004: Only NEW orders can be changed (order is CANCELLED)
+ 50. BEGIN orders_api.create_order(:1,:2,:3,:4,:5); END; ['102', 'Nut', '50', '.004']
+     → OK, out :5 = 108
+ 51. BEGIN customers_api.update_customer(:1,:2,:3,:4); END; ['2', 'Globex', '3000', 'N']
+     → OK
+ 52. BEGIN orders_api.update_order(:1,:2,:3,:4); END; ['107', 'Widget', '11', '5']
+     → ORA-20004: Only NEW orders can be changed (order is CANCELLED)
+ 53. BEGIN orders_api.create_order(:1,:2,:3,:4,:5); END; ['102', 'Widget', '0', '5']
+     → ORA-20001: Quantity must be a positive whole number
+ 54. BEGIN orders_api.delete_order(:1); END; ['100']
+     → OK
+
+== CUSTOMERS ==
+ID | NAME | CREDIT_LIMIT | ACTIVE
+1 | Acme Corp | 800 | Y
+2 | Globex | 3000 | N
+100 | Umbrella | 2500 | Y
+102 | Stark | 0 | Y
+
+== ORDERS ==
+ID | CUSTOMER_ID | PRODUCT | QUANTITY | UNIT_PRICE | DISCOUNT_PCT | TOTAL | STATUS | CREATED_AT | UPDATED_AT
+1 | 1 | Widget | 5 | 20 | 0 | 100 | SHIPPED | [timestamp] | [timestamp]
+2 | 1 | Gadget | 12 | 50 | 5 | 570 | SHIPPED | [timestamp] | null
+3 | 2 | Sprocket | 3 | 100 | 0 | 300 | CANCELLED | [timestamp] | null
+104 | 100 | Widget | 50 | 19.99 | 10 | 899.55 | NEW | [timestamp] | null
+105 | 100 | Nut | 12 | 100 | 5 | 1140 | NEW | [timestamp] | null
+107 | 1 | Widget | 10 | 5 | 5 | 47.5 | CANCELLED | [timestamp] | [timestamp]
+108 | 102 | Nut | 50 | 0 | 10 | 0 | NEW | [timestamp] | null
+
+== AUDIT_LOG ==
+ID | TABLE_NAME | ROW_ID | ACTION | OLD_VALUES | NEW_VALUES | CHANGED_AT | CHANGED_BY
+1 | CUSTOMERS | 3 | UPDATE | name=Initech;credit_limit=2000.00;active=N | name=Initech;credit_limit=800.00;active=N | [timestamp] | APP
+2 | CUSTOMERS | 1 | UPDATE | name=Acme Corp;credit_limit=5000.00;active=Y | name=Acme Corp;credit_limit=800.00;active=Y | [timestamp] | APP
+3 | CUSTOMERS | 3 | UPDATE | name=Initech;credit_limit=800.00;active=N | name=Initech;credit_limit=800.00;active=N | [timestamp] | APP
+4 | CUSTOMERS | 2 | UPDATE | name=Globex;credit_limit=1000.00;active=Y | name=Globex;credit_limit=3000.00;active=Y | [timestamp] | APP
+5 | ORDERS | 100 | INSERT | null | customer_id=2;product=Nut;quantity=12;unit_price=5.00;total=57.00;status=NEW | [timestamp] | APP
+6 | ORDERS | 1 | UPDATE | customer_id=1;product=Widget;quantity=5;unit_price=20.00;total=100.00;status=NEW | customer_id=1;product=Widget;quantity=5;unit_price=20.00;total=100.00;status=SHIPPED | [timestamp] | APP
+7 | CUSTOMERS | 100 | INSERT | null | name=Umbrella;credit_limit=2500.00;active=Y | [timestamp] | APP
+8 | ORDERS | 100 | UPDATE | customer_id=2;product=Nut;quantity=12;unit_price=5.00;total=57.00;status=NEW | customer_id=2;product=Nut;quantity=12;unit_price=5.00;total=57.00;status=CANCELLED | [timestamp] | APP
+9 | ORDERS | 101 | INSERT | null | customer_id=1;product=Widget;quantity=50;unit_price=0.00;total=0.00;status=NEW | [timestamp] | APP
+10 | ORDERS | 101 | DELETE | customer_id=1;product=Widget;quantity=50;unit_price=0.00;total=0.00;status=NEW | null | [timestamp] | APP
+11 | ORDERS | 102 | INSERT | null | customer_id=100;product=Gear;quantity=50;unit_price=0.00;total=0.00;status=NEW | [timestamp] | APP
+13 | ORDERS | 102 | DELETE | customer_id=100;product=Gear;quantity=50;unit_price=0.00;total=0.00;status=NEW | null | [timestamp] | APP
+14 | CUSTOMERS | 102 | INSERT | null | name=Stark;credit_limit=0.00;active=Y | [timestamp] | APP
+15 | CUSTOMERS | 104 | INSERT | null | name=Hooli;credit_limit=2500.00;active=Y | [timestamp] | APP
+16 | ORDERS | 104 | INSERT | null | customer_id=100;product=Widget;quantity=50;unit_price=19.99;total=899.55;status=NEW | [timestamp] | APP
+17 | CUSTOMERS | 3 | DELETE | name=Initech;credit_limit=800.00;active=N | null | [timestamp] | APP
+18 | CUSTOMERS | 104 | DELETE | name=Hooli;credit_limit=2500.00;active=Y | null | [timestamp] | APP
+19 | ORDERS | 105 | INSERT | null | customer_id=100;product=Nut;quantity=12;unit_price=100.00;total=1140.00;status=NEW | [timestamp] | APP
+21 | ORDERS | 107 | INSERT | null | customer_id=1;product=Widget;quantity=10;unit_price=5.00;total=47.50;status=NEW | [timestamp] | APP
+22 | ORDERS | 107 | UPDATE | customer_id=1;product=Widget;quantity=10;unit_price=5.00;total=47.50;status=NEW | customer_id=1;product=Widget;quantity=10;unit_price=5.00;total=47.50;status=CANCELLED | [timestamp] | APP
+23 | CUSTOMERS | 2 | UPDATE | name=Globex;credit_limit=3000.00;active=Y | name=Globex;credit_limit=3000.00;active=N | [timestamp] | APP
+24 | CUSTOMERS | 1 | UPDATE | name=Acme Corp;credit_limit=800.00;active=Y | name=Acme Corp;credit_limit=800.00;active=Y | [timestamp] | APP
+25 | ORDERS | 108 | INSERT | null | customer_id=102;product=Nut;quantity=50;unit_price=0.00;total=0.00;status=NEW | [timestamp] | APP
+26 | CUSTOMERS | 2 | UPDATE | name=Globex;credit_limit=3000.00;active=N | name=Globex;credit_limit=3000.00;active=N | [timestamp] | APP
+27 | ORDERS | 100 | DELETE | customer_id=2;product=Nut;quantity=12;unit_price=5.00;total=57.00;status=CANCELLED | null | [timestamp] | APP
+

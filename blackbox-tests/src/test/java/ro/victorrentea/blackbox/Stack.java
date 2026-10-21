@@ -2,6 +2,7 @@ package ro.victorrentea.blackbox;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.HashMap;
@@ -27,9 +28,14 @@ public final class Stack {
   private Stack() {
   }
 
+  /** A connection as the application's own database user. */
+  public static Connection connect() throws SQLException {
+    return DriverManager.getConnection(DB_URL, "app", "app");
+  }
+
   /** Test fixture, not part of the behaviour under test: back to the known starting data. */
   public static void resetData() {
-    try (var connection = DriverManager.getConnection(DB_URL, "app", "app");
+    try (var connection = connect();
          var call = connection.prepareCall("{call demo_data.reset}")) {
       call.execute();
     } catch (SQLException e) {

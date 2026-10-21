@@ -8,8 +8,12 @@ final class Golden {
   }
 
   static Options options() {
-    return new Options()
-        .withScrubber(text -> text.replaceAll("\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}", "[timestamp]"));
+    return scrubbed(new Options());
+  }
+
+  static Options scrubbed(Options options) {
+    return options
+        .withScrubber(text -> text.replaceAll("\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}(\\.\\d+)?", "[timestamp]"));
   }
 
   /** Everything a user could look at once the scenario is over. */

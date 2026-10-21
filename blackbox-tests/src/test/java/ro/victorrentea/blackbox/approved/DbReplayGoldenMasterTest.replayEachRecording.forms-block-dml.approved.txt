@@ -1,0 +1,29 @@
+  1. update orders set quantity = :qty, product = :prod where id = :id and status = 'NEW' ['7', 'Washer', '1']
+     → OK, 1 row(s)
+  2. insert into orders (customer_id, product, quantity, unit_price) values (:id, :prod, :qty, 3) ['1', 'Washer', '7']
+     → OK, 1 row(s)
+  3. delete from orders where id = 3 
+     → OK, 1 row(s)
+  4. insert into customers (name, credit_limit) values ('Forms Direct', 100) 
+     → OK, 1 row(s)
+
+== CUSTOMERS ==
+ID | NAME | CREDIT_LIMIT | ACTIVE
+1 | Acme Corp | 5000 | Y
+2 | Globex | 1000 | Y
+3 | Initech | 2000 | N
+100 | Forms Direct | 100 | Y
+
+== ORDERS ==
+ID | CUSTOMER_ID | PRODUCT | QUANTITY | UNIT_PRICE | DISCOUNT_PCT | TOTAL | STATUS | CREATED_AT | UPDATED_AT
+1 | 1 | Washer | 7 | 20 | 0 | 140 | NEW | [timestamp] | [timestamp]
+2 | 1 | Gadget | 12 | 50 | 5 | 570 | SHIPPED | [timestamp] | null
+100 | 1 | Washer | 7 | 3 | 0 | 21 | NEW | [timestamp] | null
+
+== AUDIT_LOG ==
+ID | TABLE_NAME | ROW_ID | ACTION | OLD_VALUES | NEW_VALUES | CHANGED_AT | CHANGED_BY
+1 | ORDERS | 1 | UPDATE | customer_id=1;product=Widget;quantity=5;unit_price=20.00;total=100.00;status=NEW | customer_id=1;product=Washer;quantity=7;unit_price=20.00;total=140.00;status=NEW | [timestamp] | APP
+2 | ORDERS | 100 | INSERT | null | customer_id=1;product=Washer;quantity=7;unit_price=3.00;total=21.00;status=NEW | [timestamp] | APP
+3 | ORDERS | 3 | DELETE | customer_id=2;product=Sprocket;quantity=3;unit_price=100.00;total=300.00;status=CANCELLED | null | [timestamp] | APP
+4 | CUSTOMERS | 100 | INSERT | null | name=Forms Direct;credit_limit=100.00;active=Y | [timestamp] | APP
+

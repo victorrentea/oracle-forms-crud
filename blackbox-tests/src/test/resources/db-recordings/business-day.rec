@@ -1,0 +1,55 @@
+# recorded 2026-10-21T10:57:08Z from ofc-db-bb: <sql>TAB<binds>, with \\ \n \r \t escaped
+BEGIN customers_api.update_customer(:1,:2,:3,:4); END; 	 #1(1):3 #2(7):Initech #3(3):800 #4(1):N
+BEGIN customers_api.update_customer(:1,:2,:3,:4); END; 	 #1(1):1 #2(9):Acme Corp #3(3):800 #4(1):Y
+BEGIN customers_api.update_customer(:1,:2,:3,:4); END; 	 #1(1):3 #2(7):Initech #3(3):800 #4(1):N
+BEGIN customers_api.update_customer(:1,:2,:3,:4); END; 	 #1(1):2 #2(6):Globex #3(4):3000 #4(1):Y
+BEGIN orders_api.create_order(:1,:2,:3,:4,:5); END; 	 #1(1):1 #2(0):  #3(1):9 #4(4):.004
+BEGIN orders_api.ship_order(:1); END; 	 #1(1):2
+BEGIN customers_api.create_customer(:1,:2,:3); END; 	 #1(8):Umbrella #2(2):-1
+BEGIN orders_api.create_order(:1,:2,:3,:4,:5); END; 	 #1(1):2 #2(6):Widget #3(3):2.5 #4(3):100
+BEGIN customers_api.create_customer(:1,:2,:3); END; 	 #1(6):Stark  #2(2):-1
+BEGIN orders_api.ship_order(:1); END; 	 #1(1):2
+BEGIN customers_api.delete_customer(:1); END; 	 #1(1):2
+BEGIN orders_api.create_order(:1,:2,:3,:4,:5); END; 	 #1(1):2 #2(3):Nut #3(2):12 #4(1):5
+BEGIN orders_api.ship_order(:1); END; 	 #1(1):1
+BEGIN customers_api.create_customer(:1,:2,:3); END; 	 #1(8):Umbrella #2(4):2500
+BEGIN orders_api.update_order(:1,:2,:3,:4); END; 	 #1(1):1 #2(6):Widget #3(2):11 #4(2):20
+BEGIN customers_api.create_customer(:1,:2,:3); END; 	 #1(6):Globex #2(1):0
+BEGIN orders_api.update_order(:1,:2,:3,:4); END; 	 #1(1):3 #2(8):Sprocket #3(1):2 #4(3):100
+BEGIN orders_api.cancel_order(:1); END; 	 #1(3):100
+BEGIN orders_api.create_order(:1,:2,:3,:4,:5); END; 	 #1(1):1 #2(0):  #3(1):9 #4(1):5
+BEGIN orders_api.create_order(:1,:2,:3,:4,:5); END; 	 #1(1):1 #2(6):Widget #3(2):50 #4(4):.004
+BEGIN orders_api.ship_order(:1); END; 	 #1(1):2
+BEGIN orders_api.delete_order(:1); END; 	 #1(3):101
+BEGIN orders_api.create_order(:1,:2,:3,:4,:5); END; 	 #1(3):100 #2(4):Gear #3(2):50 #4(4):.004
+BEGIN orders_api.create_order(:1,:2,:3,:4,:5); END; 	 #1(1):2 #2(4):Bolt #3(3):2.5 #4(1):5
+BEGIN orders_api.create_order(:1,:2,:3,:4,:5); END; 	 #1(1):1 #2(4):Bolt #3(1):3 #4(3):100
+BEGIN orders_api.delete_order(:1); END; 	 #1(3):102
+BEGIN orders_api.ship_order(:1); END; 	 #1(1):3
+BEGIN customers_api.create_customer(:1,:2,:3); END; 	 #1(6):Stark  #2(1):0
+BEGIN customers_api.create_customer(:1,:2,:3); END; 	 #1(6):Globex #2(4):2500
+BEGIN orders_api.delete_order(:1); END; 	 #1(1):1
+BEGIN customers_api.create_customer(:1,:2,:3); END; 	 #1(5):Hooli #2(4):2500
+BEGIN orders_api.create_order(:1,:2,:3,:4,:5); END; 	 #1(3):100 #2(6):Widget #3(2):50 #4(5):19.99
+BEGIN customers_api.delete_customer(:1); END; 	 #1(1):3
+BEGIN customers_api.delete_customer(:1); END; 	 #1(3):104
+BEGIN orders_api.create_order(:1,:2,:3,:4,:5); END; 	 #1(3):100 #2(3):Nut #3(2):12 #4(3):100
+BEGIN orders_api.create_order(:1,:2,:3,:4,:5); END; 	 #1(3):102 #2(4):Bolt #3(1):3 #4(1):0
+BEGIN orders_api.create_order(:1,:2,:3,:4,:5); END; 	 #1(3):100 #2(8): Spring  #3(1):0 #4(1):5
+BEGIN orders_api.delete_order(:1); END; 	 #1(1):2
+BEGIN orders_api.create_order(:1,:2,:3,:4,:5); END; 	 #1(3):100 #2(4):Bolt #3(2):60 #4(3):250
+BEGIN orders_api.ship_order(:1); END; 	 #1(1):3
+BEGIN orders_api.ship_order(:1); END; 	 #1(1):2
+BEGIN orders_api.create_order(:1,:2,:3,:4,:5); END; 	 #1(3):100 #2(4):Bolt #3(2):12 #4(1):0
+BEGIN orders_api.create_order(:1,:2,:3,:4,:5); END; 	 #1(3):102 #2(0):  #3(1):9 #4(1):5
+BEGIN orders_api.create_order(:1,:2,:3,:4,:5); END; 	 #1(1):1 #2(6):Widget #3(2):10 #4(1):5
+BEGIN orders_api.cancel_order(:1); END; 	 #1(3):107
+BEGIN customers_api.update_customer(:1,:2,:3,:4); END; 	 #1(1):2 #2(6):Globex #3(4):3000 #4(1):N
+BEGIN orders_api.update_order(:1,:2,:3,:4); END; 	 #1(1):2 #2(6):Gadget #3(2):11 #4(2):50
+BEGIN customers_api.update_customer(:1,:2,:3,:4); END; 	 #1(1):1 #2(9):Acme Corp #3(3):800 #4(1):Y
+BEGIN orders_api.update_order(:1,:2,:3,:4); END; 	 #1(3):100 #2(3):Nut #3(2):51 #4(1):5
+BEGIN orders_api.create_order(:1,:2,:3,:4,:5); END; 	 #1(3):102 #2(3):Nut #3(2):50 #4(4):.004
+BEGIN customers_api.update_customer(:1,:2,:3,:4); END; 	 #1(1):2 #2(6):Globex #3(4):3000 #4(1):N
+BEGIN orders_api.update_order(:1,:2,:3,:4); END; 	 #1(3):107 #2(6):Widget #3(2):11 #4(1):5
+BEGIN orders_api.create_order(:1,:2,:3,:4,:5); END; 	 #1(3):102 #2(6):Widget #3(1):0 #4(1):5
+BEGIN orders_api.delete_order(:1); END; 	 #1(3):100

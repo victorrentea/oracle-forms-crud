@@ -1,0 +1,7 @@
+# What an Oracle Forms base-table block sends: DML straight to the tables, with binds, no package in between.
+# (captured while running the same kind of statements from SQL*Plus)
+# recorded 2026-10-21T10:58:34Z from ofc-db-bb: <sql>TAB<binds>, with \\ \n \r \t escaped
+update orders set quantity = :qty, product = :prod where id = :id and status = 'NEW' 	 #1(1):7 #2(6):Washer #3(1):1
+insert into orders (customer_id, product, quantity, unit_price) values (:id, :prod, :qty, 3) 	 #1(1):1 #2(6):Washer #3(1):7
+delete from orders where id = 3 	
+insert into customers (name, credit_limit) values ('Forms Direct', 100) 	
