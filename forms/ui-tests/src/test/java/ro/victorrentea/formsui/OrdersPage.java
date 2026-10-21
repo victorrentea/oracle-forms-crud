@@ -22,7 +22,9 @@ public class OrdersPage {
       this.index = number - 1;
     }
 
-    private Locator column(String name) {
+    /** A cell by its column prompt: "Id", "Customer", "Product", "Qty", "Total", "Status"... */
+    public Locator column(String name) {
+      if (!COLUMNS.contains(name)) throw new IllegalArgumentException("No column " + name + " in " + COLUMNS);
       return app.cell(index, COLUMNS.indexOf(name), name);
     }
 
