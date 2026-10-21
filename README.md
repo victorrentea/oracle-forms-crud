@@ -11,6 +11,8 @@ whitebox.sh         utPLSQL unit tests of the PL/SQL                       — w
 blackbox-tests/     HTTP specs, combinatorial golden masters, DB replay     — black-box
 ui-tests/           Playwright, headless browser                           — black-box
 test-all.sh         all layers on a fresh throw-away stack (~1.5 min)
+forms/              a REAL Oracle Forms 12.2.1.19 server + the same Orders screen as a .fmx,
+                    opened in the desktop Java client, and tests driving that client — black-box
 ```
 
 ## Run it
@@ -92,3 +94,34 @@ Their Forms runs through the **Forms Standalone Launcher** (`java -jar frmsal.ja
 3. A quantity of 1,000,000 or more, or a product name over 100 characters, raises a raw ORA-01438 or ORA-12899 instead of an ORA-20001 message.
 
 Fixing one is a good classroom exercise. Watch which golden masters change, and why.
+
+## The real thing: Oracle Forms 12c on a desktop Java client (`forms/`)
+
+The web app above is a stand-in. `forms/` runs **actual Oracle Forms 12.2.1.19** over the same database, and its client is a desktop Java window, not a browser page, the way the client's users see it:
+
+```
+Mac (arm64)                                  Lima VM (vz + Rosetta, Ubuntu 24.04 kernel 6.8)
+┌───────────────────────────────┐            ┌─────────────────────────────────────────────┐
+│ Forms client window (Java 8)   │  HTTP      │ x86 Oracle Linux 8 container                 │
+│  java -jar frmsal.jar          │──:9001────▶│  WebLogic 12.2.1.4: AdminServer + WLS_FORMS   │
+│  + forms-driver agent :9971 ◀──┼── tests    │  frmweb runtime runs ORDERS.fmx               │
+└───────────────────────────────┘            └──────────────────┬──────────────────────────┘
+                                                                 │ SQL*Net
+                                            Podman: Oracle Free 23ai (app schema + RCU schemas)
+```
+
+- **The form** is `forms/src/ORDERS.xml`. `forms/build-form.sh` converts it to `.fmb` with `frmxml2f`, then compiles it to `.fmx` with `frmcmp_batch`. The form is classic Forms: a multi-record block on `ORDERS`, `ON-INSERT/ON-UPDATE/ON-DELETE` triggers that call `orders_api`, and Ship/Cancel buttons. Ctrl+S commits.
+- **The client** is started by `forms/run-client.sh`. It uses the Forms Standalone Launcher on Oracle JDK 8, which is browser-less. Java Web Start also works, through OpenWebStart, at `http://localhost:9001/forms/frmservlet?config=orders`. Oracle's own `javaws` has no Apple Silicon build.
+- **The driver** is `forms/driver/`, a Java agent inside the client JVM. It reads the live component tree (`oracle.forms.ui.VTextField` cells, `VButton`s, the status bar) and posts keystrokes into the client's own event queue. The tests never take your mouse or keyboard, and the Forms window can stay in the background.
+- **The tests** are in `forms/ui-tests/`. JUnit drives the screen like a clerk: Down to a new line, type, Tab, Ctrl+S, read the grid and the status line. Every test starts a fresh client on freshly reset data, and the 5 tests take ~40 s.
+
+```bash
+cd forms/ui-tests && mvn test                      # needs the Forms server up (see forms/install)
+mvn test -DkeyDelayMs=900                          # slower, to watch it type
+```
+
+Setup notes and gotchas from the install:
+- **Rosetta inside Linux VMs:** Rosetta on macOS 15.7 crashes on recent kernels (Podman's Fedora 6.15, Lima's default kernel). Ubuntu 24.04's kernel 6.8 works.
+- **RCU:** RCU 12.2.1.4 created its schemas in Oracle 23ai Free without complaint.
+- **The forms1 instance:** a WLST-built domain gets an incomplete `forms1` instance. `setup-domain.sh` fills it in: config templates, placeholders, the `instances/forms1` path, and `fmrweb.res`. The servlet reads `servers/WLS_FORMS/applications/formsapp_12.2.1/config/formsweb.cfg`.
+- **The database port is baked in:** the domain's datasource and `APPDB` both point at the Podman database's host port. Recreate the `dev` stack and you must update them.
