@@ -119,6 +119,12 @@ Mac (arm64)                                  Lima VM (vz + Rosetta, Ubuntu 24.04
   - The Page Object `OrdersPage` speaks clerk language: `enterNewOrder(...)`, `save()`, `goToLine(2).cancelOrder()`, `line(4).total()`.
 - **The Gherkin layer** on top: `features/orders.feature` runs through Cucumber 8. Every step attaches the Forms window to `target/cucumber-report.html`.
 - **Fast and parallel.** `FormsPool` keeps one long-lived client per worker (default 3: `-Dworkers`). A test borrows a worker and gets a clean slate in under a second: F8, the form's Clear Form, rolls back and re-queries; the worker's data is reset; F8 again. Each worker has its own schema (`APP1..APP3`, created by `forms/setup-workers.sh`) and its own `[ordersN]` config, so tests running side by side never see each other's orders. The 6 JUnit tests plus the 7 scenarios take ~17 s, down from ~76 s with a fresh client per test.
+- **Playwright traces of a desktop app.** Every test also writes a real Playwright trace (`target/forms-traces/*.zip`, format v10), so the standard Playwright Trace Viewer replays it:
+  - *Actions*: the Gherkin steps or page-object methods, with the keys, typing, clicks and expects nested under them. Each one links to its line of the Java test or the `.feature` file in the *Source* tab.
+  - *Snapshots*: the Forms window before, at and after every action, with the target field, cell or button outlined, plus the filmstrip at the top.
+  - *Network*: what the Forms runtime sent to Oracle during each step: the block's `SELECT ROWID,... FROM ORDERS`, the POST-QUERY lookups with their bind values, and the `orders_api` package calls. It comes from Unified Auditing on the worker schemas (`setup-workers.sh`).
+
+  Run `./show-traces.sh` to serve the viewer (Playwright's own static build) next to the traces and open the list. `-Dtrace=false` skips tracing for raw speed.
 - **Headless by default.** The clients run inside the Lima VM on virtual displays (Xvfb), so nothing shows on the Mac, and Lima forwards the driver ports (9971+) back to the Mac. `-Dheaded=true` opens them on the Mac instead, slowed down so you can follow them.
 
 ```bash

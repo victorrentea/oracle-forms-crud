@@ -7,7 +7,8 @@ public class ButtonLocator extends Locator {
   private final String caption;
 
   ButtonLocator(FormsApp app, String caption) {
-    super("button \"" + caption + "\"", () -> app.snapshot().buttons().contains(caption) ? caption : "");
+    super("button \"" + caption + "\"", () -> app.snapshot().buttons().contains(caption) ? caption : "",
+        app, () -> app.where("button=" + java.net.URLEncoder.encode(caption, java.nio.charset.StandardCharsets.UTF_8)));
     this.app = app;
     this.caption = caption;
   }

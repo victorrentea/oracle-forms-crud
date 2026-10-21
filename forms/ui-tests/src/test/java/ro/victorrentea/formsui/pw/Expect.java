@@ -25,24 +25,43 @@ public final class Expect {
     currentTrace.set(trace);
   }
 
+  /** The trace of the test running on this thread, if any. */
+  public static Trace currentTrace() {
+    return currentTrace.get();
+  }
+
   public void toHaveText(String expected) {
-    check("to have text \"" + expected + "\"", actual -> actual.equals(expected));
+    check("toHaveText", expected, actual -> actual.equals(expected));
   }
 
   public void toContainText(String expected) {
-    check("to contain \"" + expected + "\"", actual -> actual.contains(expected));
+    check("toContainText", expected, actual -> actual.contains(expected));
   }
 
-  private void check(String what, java.util.function.Predicate<String> ok) {
+  private void check(String matcher, String expected, java.util.function.Predicate<String> ok) {
+    String what = matcher.equals("toHaveText") ? "to have text \"" + expected + "\"" : "to contain \"" + expected + "\"";
+    Trace trace = currentTrace.get();
+    Trace.Step step = trace == null ? null
+        : trace.action("Expect \"" + matcher + "\"  " + locator, "expect", java.util.Map.of("locator", locator.toString(), "expected", expected));
     String[] last = {null};
     try {
       poll(locator + " " + what, TIMEOUT, () -> {
         last[0] = locator.textContent();
         return ok.test(last[0]) ? true : null;
       });
-      if (currentTrace.get() != null) currentTrace.get().assertion("✓ expect " + locator + " " + what);
+      if (step != null) trace.end(step, locator.app.tracedScreenshot(), box(), false, true, null);
     } catch (AssertionError e) {
-      throw new AssertionError("expected " + locator + " " + what + ", but it was \"" + last[0] + "\"", e);
+      String message = "expected " + locator + " " + what + ", but it was \"" + last[0] + "\"";
+      if (step != null) trace.end(step, locator.app.screenshot(), box(), false, false, message);
+      throw new AssertionError(message, e);
+    }
+  }
+
+  private Trace.Box box() {
+    try {
+      return locator.where == null ? null : locator.where.get();
+    } catch (RuntimeException notOnScreen) {
+      return null;
     }
   }
 

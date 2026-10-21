@@ -41,3 +41,23 @@ height=620
 CFGEOF"
   echo "worker $i: schema APP$i, config [orders$i]"
 done
+
+# What each worker's Forms runtime sends to the database (queries, DML, package calls), for the
+# test traces: top-level statements only, so DML inside orders_api is not repeated.
+actions=""
+for i in $(seq 1 "$N"); do
+  for t in orders customers; do actions="$actions
+  select on app$i.$t, insert on app$i.$t, update on app$i.$t, delete on app$i.$t,"; done
+  actions="$actions
+  execute on app$i.orders_api, execute on app$i.customers_api,"  # one line each: SQL*Plus caps line length
+done
+users=$(for i in $(seq 1 "$N"); do echo "app$i"; done | paste -sd, -)
+podman exec -i "$DB" sqlplus -s system/oracle@FREEPDB1 <<SQL
+whenever sqlerror continue
+noaudit policy ofc_forms_trace;
+drop audit policy ofc_forms_trace;
+whenever sqlerror exit failure
+create audit policy ofc_forms_trace actions ${actions%,} only toplevel;
+audit policy ofc_forms_trace by $users;
+SQL
+echo "auditing what $users send to the database (policy OFC_FORMS_TRACE)"

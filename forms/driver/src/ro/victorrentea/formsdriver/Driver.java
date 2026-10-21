@@ -108,6 +108,33 @@ final class Driver {
     return "key " + name;
   }
 
+  /** The main Forms window: what /screenshot paints and what /where measures against. */
+  static Frame formsWindow() {
+    for (Frame f : Frame.getFrames()) {
+      if (f.isVisible() && f.getClass().getName().startsWith("oracle.") && f.getWidth() > 100) return f;
+    }
+    return null;
+  }
+
+  /**
+   * "x,y,w,h" of a grid cell (row+col), a button (button=caption) or, with neither, of the field
+   * holding the cursor — in screenshot pixels, so a trace viewer can draw on the screenshot.
+   */
+  static String where(String row, String col, String button) {
+    Component c;
+    if (button != null) {
+      c = all(BUTTON).stream().filter(b -> button.equals(Agent.text(b))).findFirst().orElse(null);
+    } else if (row != null) {
+      c = grid().get(Integer.parseInt(row)).get(Integer.parseInt(col));
+    } else {
+      c = focusOwner();
+    }
+    Frame window = formsWindow();
+    if (c == null || window == null) return "ERROR nothing to locate";
+    java.awt.Rectangle r = javax.swing.SwingUtilities.convertRectangle(c.getParent(), c.getBounds(), window);
+    return r.x + "," + r.y + "," + r.width + "," + r.height;
+  }
+
   // ---- helpers ----
 
   /**

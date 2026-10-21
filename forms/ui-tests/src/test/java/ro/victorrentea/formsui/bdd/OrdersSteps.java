@@ -22,15 +22,17 @@ public class OrdersSteps {
 
   private Scenario scenario;
 
+  /** Borrowed before the first step, so every Gherkin step of the scenario lands in its trace. */
   @io.cucumber.java.Before
-  public void remember(Scenario scenario) {
+  public void borrowAFormsClient(Scenario scenario) {
     this.scenario = scenario;
+    app = FormsPool.acquire(scenario.getName() + " (line " + scenario.getLine() + ")"); // Outline examples share a name
+    orders = new OrdersPage(app);
   }
 
   @Given("the Orders form is open")
   public void theOrdersFormIsOpen() {
-    app = FormsPool.acquire(scenario.getName());
-    orders = new OrdersPage(app);
+    expect(orders.recordIndicator()).toContainText("Record: 1/");
   }
 
   @When("I enter a new order for customer {int}: {int} x {string} at {int}")
@@ -94,7 +96,9 @@ public class OrdersSteps {
   }
 
   @After
-  public void giveTheFormBack(Scenario scenario) {
-    if (app != null) FormsPool.release(app, !scenario.isFailed());
+  public void giveTheFormBack(Scenario scenario) throws java.io.IOException {
+    if (app == null) return;
+    ro.victorrentea.formsui.pw.TraceIndex.save(app, scenario.isFailed() ? new AssertionError("Scenario failed: " + scenario.getName()) : null);
+    FormsPool.release(app, !scenario.isFailed());
   }
 }

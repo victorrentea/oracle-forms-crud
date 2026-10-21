@@ -25,8 +25,8 @@ import java.util.concurrent.TimeUnit;
  */
 public class FormsApp implements AutoCloseable {
   public static final boolean HEADED = Boolean.getBoolean("headed");
-  /** -Dtrace=true: a screenshot after every key, for the HTML trace. Failures always get one. */
-  static final boolean TRACE_EVERY_STEP = Boolean.getBoolean("trace");
+  /** A Playwright trace per test, with a screenshot after every key and the SQL sent meanwhile. -Dtrace=false for speed. */
+  static final boolean TRACE = !"false".equals(System.getProperty("trace"));
   private static final HttpClient HTTP = HttpClient.newHttpClient();
   private static final String DB_URL = System.getProperty("dbUrl", "jdbc:oracle:thin:@127.0.0.1:46371/FREEPDB1");
 
@@ -35,6 +35,8 @@ public class FormsApp implements AutoCloseable {
   private final String schema;
   private final Process process;
   private Trace trace;
+  private java.time.Instant dbClockAtStart; // the database's clock when the trace's clock read traceClockAtStart
+  private double traceClockAtStart;
 
   /** The raw screen the driver reports: grid cells, buttons, status line, cursor position. */
   public record Snapshot(List<List<String>> rows, List<String> buttons, String status, int cursorRow, int cursorCol) {
@@ -79,7 +81,46 @@ public class FormsApp implements AutoCloseable {
       Snapshot s = snapshot();
       return s.status().contains("Record: 1/3") && s.rows().get(3).get(0).isBlank() && s.cursorRow() == 0 ? true : null;
     });
-    trace.step("Orders form, fresh data (worker " + worker + (HEADED ? ", on screen" : ", headless") + ")", screenshot());
+    trace.screen(screenshot());
+    if (TRACE) {
+      traceClockAtStart = trace.now();
+      dbClockAtStart = dbClock();
+    }
+  }
+
+  /** Copies into the trace what this worker's Forms runtime sent to the database during the test. */
+  public void collectSql() {
+    if (!TRACE || dbClockAtStart == null) return;
+    String sql = """
+        select to_char(event_timestamp_utc, 'YYYY-MM-DD"T"HH24:MI:SS.FF3"Z"') ts, action_name, object_name,
+               dbms_lob.substr(sql_text, 4000), dbms_lob.substr(sql_binds, 4000), return_code
+          from unified_audit_trail
+         where dbusername = ? and unified_audit_policies like '%OFC_FORMS_TRACE%'
+           and event_timestamp_utc >= to_timestamp(?, 'YYYY-MM-DD"T"HH24:MI:SS.FF3"Z"')
+         order by event_timestamp_utc, entry_id""";
+    try (var c = DriverManager.getConnection(DB_URL, "system", "oracle"); var ps = c.prepareStatement(sql)) {
+      ps.setString(1, schema.toUpperCase());
+      ps.setString(2, java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
+          .withZone(java.time.ZoneOffset.UTC).format(dbClockAtStart));
+      try (var rs = ps.executeQuery()) {
+        while (rs.next()) {
+          double at = traceClockAtStart + java.time.Duration.between(dbClockAtStart, java.time.Instant.parse(rs.getString(1))).toNanos() / 1e6;
+          trace.sql(at, schema.toUpperCase(), rs.getString(2), rs.getString(3), rs.getString(4), rs.getString(5), rs.getInt(6));
+        }
+      }
+    } catch (SQLException e) {
+      throw new IllegalStateException("Cannot read the audit trail", e);
+    }
+  }
+
+  private java.time.Instant dbClock() {
+    try (var c = DriverManager.getConnection(DB_URL, schema, "app"); var st = c.createStatement();
+         var rs = st.executeQuery("select to_char(sys_extract_utc(systimestamp), 'YYYY-MM-DD\"T\"HH24:MI:SS.FF3\"Z\"') from dual")) {
+      rs.next();
+      return java.time.Instant.parse(rs.getString(1));
+    } catch (SQLException e) {
+      throw new IllegalStateException(e);
+    }
   }
 
   /**
@@ -143,7 +184,7 @@ public class FormsApp implements AutoCloseable {
       String status = snapshot().status();
       int record = status.indexOf("Record:");
       return (record < 0 ? status : status.substring(0, record)).replaceAll("\\s*/\\s*$", "").trim();
-    });
+    }, this, null);
   }
 
   /** The "Record: n/m" indicator of the status bar. */
@@ -152,11 +193,12 @@ public class FormsApp implements AutoCloseable {
       String status = snapshot().status();
       int record = status.indexOf("Record:");
       return record < 0 ? "" : status.substring(record).trim();
-    });
+    }, this, null);
   }
 
   public Locator cell(int row, int column, String columnName) {
-    return new Locator(columnName + " of line " + (row + 1), () -> snapshot().rows().get(row).get(column));
+    return new Locator(columnName + " of line " + (row + 1), () -> snapshot().rows().get(row).get(column),
+        this, () -> where("row=" + row + "&col=" + column));
   }
 
   public ButtonLocator button(String caption) {
@@ -167,31 +209,51 @@ public class FormsApp implements AutoCloseable {
 
   /** A Forms function key: "Tab", "Down", "Control+S" (Commit), "F8" (Clear Form)... */
   public FormsApp press(String key) {
+    Trace.Step step = trace.action("Press \"" + key + "\"", "pw:api", java.util.Map.of("key", key));
+    Trace.Box target = TRACE ? focusBox() : null; // where the key goes
     pressKey(key);
-    step("Press " + key);
+    trace.end(step, tracedScreenshot(), target, false, true, null);
     return this;
   }
 
   public FormsApp type(String text) {
+    Trace.Step step = trace.action("Type \"" + text + "\"", "pw:api", java.util.Map.of("text", text));
+    Trace.Box target = TRACE ? focusBox() : null;
     call("/type?text=" + URLEncoder.encode(text, StandardCharsets.UTF_8));
     settle();
-    step("Type \"" + text + "\"");
+    trace.end(step, tracedScreenshot(), target, false, true, null);
     return this;
   }
 
   void click(String caption) {
+    Trace.Step step = trace.action("Click \"" + caption + "\"", "pw:api", java.util.Map.of("button", caption));
+    Trace.Box target = TRACE ? where("button=" + URLEncoder.encode(caption, StandardCharsets.UTF_8)) : null;
     call("/click?button=" + URLEncoder.encode(caption, StandardCharsets.UTF_8));
     settle();
-    step("Click \"" + caption + "\"");
+    trace.end(step, tracedScreenshot(), target, true, true, null);
+  }
+
+  /** Where a component is drawn on the screenshot: "row=..&col=..", "button=..", or "" for the cursor. */
+  Trace.Box where(String query) {
+    String[] r = call("/where?" + query).trim().split(",");
+    return new Trace.Box(Integer.parseInt(r[0]), Integer.parseInt(r[1]), Integer.parseInt(r[2]), Integer.parseInt(r[3]));
+  }
+
+  private Trace.Box focusBox() {
+    try {
+      return where("focus");
+    } catch (RuntimeException noFocus) {
+      return null;
+    }
+  }
+
+  byte[] tracedScreenshot() {
+    return TRACE ? screenshot() : null;
   }
 
   private void pressKey(String key) {
     call("/key?name=" + URLEncoder.encode(key.replace("Control+", "ctrl+").replace("Shift+", "shift+"), StandardCharsets.UTF_8));
     settle();
-  }
-
-  private void step(String title) {
-    trace.step(title, TRACE_EVERY_STEP ? screenshot() : null);
   }
 
   public Trace trace() {

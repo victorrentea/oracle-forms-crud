@@ -58,36 +58,40 @@ public class OrdersPage {
 
   /** Moves the cursor to the given line with the arrow keys, as a Forms user does. */
   public OrdersPage goToLine(int number) {
-    int target = number - 1;
-    int current = app.snapshot().cursorRow();
-    for (; current < target; current++) app.press("Down");
-    for (; current > target; current--) app.press("Up");
+    app.trace().group("Go to line " + number, () -> {
+      int target = number - 1;
+      int current = app.snapshot().cursorRow();
+      for (; current < target; current++) app.press("Down");
+      for (; current > target; current--) app.press("Up");
+    });
     return this;
   }
 
   /** Arrow down past the last order to a blank line and key in a new order (not saved yet). */
   public OrdersPage enterNewOrder(int customerId, String product, String quantity, String unitPrice) {
-    goToLine(orderCount() + 1);
-    app.type(String.valueOf(customerId)).press("Tab")
-        .type(product).press("Tab")
-        .type(quantity).press("Tab")
-        .type(unitPrice);
+    app.trace().group("Enter new order: customer " + customerId + ", " + quantity + " x " + product + " at " + unitPrice, () -> {
+      goToLine(orderCount() + 1);
+      app.type(String.valueOf(customerId)).press("Tab")
+          .type(product).press("Tab")
+          .type(quantity).press("Tab")
+          .type(unitPrice);
+    });
     return this;
   }
 
   /** Commit, Forms' Save: Ctrl+S. */
   public OrdersPage save() {
-    app.press("Control+S");
+    app.trace().group("Save", () -> app.press("Control+S"));
     return this;
   }
 
   public OrdersPage ship() {
-    app.button("Ship").click();
+    app.trace().group("Ship", () -> app.button("Ship").click());
     return this;
   }
 
   public OrdersPage cancelOrder() {
-    app.button("Cancel Order").click();
+    app.trace().group("Cancel order", () -> app.button("Cancel Order").click());
     return this;
   }
 }

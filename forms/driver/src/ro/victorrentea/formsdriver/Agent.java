@@ -25,6 +25,7 @@ public class Agent {
     server.createContext("/tree", Agent::tree);
     server.createContext("/screen", e -> reply(e, onEdt(Driver::screen)));
     server.createContext("/screenshot", Agent::screenshot);
+    server.createContext("/where", e -> reply(e, onEdt(() -> Driver.where(param(e, "row"), param(e, "col"), param(e, "button")))));
     server.createContext("/click", e -> reply(e, onEdt(() -> Driver.click(param(e, "button")))));
     server.createContext("/cell", e -> reply(e, onEdt(() -> Driver.cell(Integer.parseInt(param(e, "row")), Integer.parseInt(param(e, "col"))))));
     server.createContext("/type", e -> reply(e, onEdt(() -> Driver.type(param(e, "text")))));
@@ -67,8 +68,9 @@ public class Agent {
   private static void screenshot(HttpExchange exchange) throws IOException {
     byte[][] png = new byte[1][];
     String error = onEdt(() -> {
-      for (Frame f : Frame.getFrames()) {
-        if (f.isVisible() && f.getClass().getName().startsWith("oracle.") && f.getWidth() > 100) {
+      Frame f = Driver.formsWindow();
+      if (f != null) {
+        {
           java.awt.image.BufferedImage img = new java.awt.image.BufferedImage(f.getWidth(), f.getHeight(), java.awt.image.BufferedImage.TYPE_INT_RGB);
           java.awt.Graphics2D g = img.createGraphics();
           f.printAll(g);
