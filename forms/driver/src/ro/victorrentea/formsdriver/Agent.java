@@ -24,6 +24,7 @@ public class Agent {
     HttpServer server = HttpServer.create(new InetSocketAddress("127.0.0.1", port), 0);
     server.createContext("/tree", Agent::tree);
     server.createContext("/screen", e -> reply(e, onEdt(Driver::screen)));
+    server.createContext("/screenshot", Agent::screenshot);
     server.createContext("/click", e -> reply(e, onEdt(() -> Driver.click(param(e, "button")))));
     server.createContext("/cell", e -> reply(e, onEdt(() -> Driver.cell(Integer.parseInt(param(e, "row")), Integer.parseInt(param(e, "col"))))));
     server.createContext("/type", e -> reply(e, onEdt(() -> Driver.type(param(e, "text")))));
@@ -59,6 +60,35 @@ public class Agent {
       for (Component child : ((Container) c).getComponents()) {
         dump(child, depth + 1, out);
       }
+    }
+  }
+
+  /** A PNG of the Forms window, painted off-screen: works headless (Xvfb) and with the window hidden. */
+  private static void screenshot(HttpExchange exchange) throws IOException {
+    byte[][] png = new byte[1][];
+    String error = onEdt(() -> {
+      for (Frame f : Frame.getFrames()) {
+        if (f.isVisible() && f.getClass().getName().startsWith("oracle.") && f.getWidth() > 100) {
+          java.awt.image.BufferedImage img = new java.awt.image.BufferedImage(f.getWidth(), f.getHeight(), java.awt.image.BufferedImage.TYPE_INT_RGB);
+          java.awt.Graphics2D g = img.createGraphics();
+          f.printAll(g);
+          g.dispose();
+          java.io.ByteArrayOutputStream out = new java.io.ByteArrayOutputStream();
+          javax.imageio.ImageIO.write(img, "png", out);
+          png[0] = out.toByteArray();
+          return null;
+        }
+      }
+      return "ERROR no Forms window";
+    });
+    if (png[0] == null) {
+      reply(exchange, error);
+      return;
+    }
+    exchange.getResponseHeaders().add("Content-Type", "image/png");
+    exchange.sendResponseHeaders(200, png[0].length);
+    try (OutputStream os = exchange.getResponseBody()) {
+      os.write(png[0]);
     }
   }
 

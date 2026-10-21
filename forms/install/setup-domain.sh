@@ -107,6 +107,8 @@ baseHTML=$inst/server/base.htm
 baseHTMLjpi=$inst/server/basejpi.htm
 baseSAAfile=$inst/server/basesaa.txt
 pageTitle=Orders
+width=1100
+height=620
 CFG
   mkdir -p /u01/forms-app
   grep -q '/u01/forms-app' "$app/default.env" || sed -i 's|^\(\s*FORMS_PATH=.*\)$|\1:/u01/forms-app|' "$app/default.env"

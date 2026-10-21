@@ -113,15 +113,23 @@ Mac (arm64)                                  Lima VM (vz + Rosetta, Ubuntu 24.04
 - **The form** is `forms/src/ORDERS.xml`. `forms/build-form.sh` converts it to `.fmb` with `frmxml2f`, then compiles it to `.fmx` with `frmcmp_batch`. The form is classic Forms: a multi-record block on `ORDERS`, `ON-INSERT/ON-UPDATE/ON-DELETE` triggers that call `orders_api`, and Ship/Cancel buttons. Ctrl+S commits.
 - **The client** is started by `forms/run-client.sh`. It uses the Forms Standalone Launcher on Oracle JDK 8, which is browser-less. Java Web Start also works, through OpenWebStart, at `http://localhost:9001/forms/frmservlet?config=orders`. Oracle's own `javaws` has no Apple Silicon build.
 - **The driver** is `forms/driver/`, a Java agent inside the client JVM. It reads the live component tree (`oracle.forms.ui.VTextField` cells, `VButton`s, the status bar) and posts keystrokes into the client's own event queue. The tests never take your mouse or keyboard, and the Forms window can stay in the background.
-- **The tests** are in `forms/ui-tests/`. JUnit drives the screen like a clerk: Down to a new line, type, Tab, Ctrl+S, read the grid and the status line. Every test starts a fresh client on freshly reset data, and the 5 tests take ~40 s.
+- **The tests** are in `forms/ui-tests/`. They use a small Playwright-style layer over the driver, `forms/ui-tests/.../pw/`: `FormsApp` is the Page, plus `Locator`s, `expect(...).toHaveText/toContainText` with auto-wait, and a per-test HTML trace with a screenshot of the Forms window after every step. The Page Object `OrdersPage` speaks clerk language: `enterNewOrder(...)`, `save()`, `goToLine(2).cancelOrder()`, `line(4).total()`. Each test gets a fresh client on freshly reset data. The suite is 6 tests and takes ~30 s.
+- **Headless by default.** The client runs inside the Lima VM on a virtual display (Xvfb), so nothing shows on the Mac, and Lima forwards the driver port back to the Mac. `-Dheaded=true` opens it on the Mac instead, slowed down so you can follow it.
 
 ```bash
-cd forms/ui-tests && mvn test                      # needs the Forms server up (see forms/install)
-mvn test -DkeyDelayMs=900                          # slower, to watch it type
+cd forms/ui-tests && mvn test                      # headless; report: target/forms-report/index.html
+mvn test -Dheaded=true                             # watch it type on this Mac
+```
+
+```java
+orders.enterNewOrder(1, "Bolt", "12", "10").save();
+expect(orders.message()).toContainText("FRM-40400: Transaction complete");
+expect(orders.line(4).total()).toHaveText("114");
 ```
 
 Setup notes and gotchas from the install:
 - **Rosetta inside Linux VMs:** Rosetta on macOS 15.7 crashes on recent kernels (Podman's Fedora 6.15, Lima's default kernel). Ubuntu 24.04's kernel 6.8 works.
 - **RCU:** RCU 12.2.1.4 created its schemas in Oracle 23ai Free without complaint.
+- **Ubuntu's OpenJDK 8:** it loads the GNOME accessibility bridge by default, and that bridge deadlocks the Forms client at startup. `-Djavax.accessibility.assistive_technologies=' '` turns it off. The client JVM also ignores SIGTERM, so tests SIGKILL it.
 - **The forms1 instance:** a WLST-built domain gets an incomplete `forms1` instance. `setup-domain.sh` fills it in: config templates, placeholders, the `instances/forms1` path, and `fmrweb.res`. The servlet reads `servers/WLS_FORMS/applications/formsapp_12.2.1/config/formsweb.cfg`.
 - **The database port is baked in:** the domain's datasource and `APPDB` both point at the Podman database's host port. Recreate the `dev` stack and you must update them.
