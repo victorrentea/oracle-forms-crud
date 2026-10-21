@@ -124,6 +124,7 @@ Mac (arm64)                                  Lima VM (vz + Rosetta, Ubuntu 24.04
   - *Snapshots*: the Forms window before, at and after every action, with the target field, cell or button outlined, plus the filmstrip at the top.
   - *Network*: what the Forms runtime sent to Oracle during each step: the block's `SELECT ROWID,... FROM ORDERS`, the POST-QUERY lookups with their bind values, and the `orders_api` package calls. It comes from Unified Auditing on the worker schemas (`setup-workers.sh`).
 
+  **Live: https://victorrentea.github.io/oracle-forms-crud/**, published with `forms/ui-tests/publish-traces.sh`.
   Run `./show-traces.sh` to serve the viewer (Playwright's own static build) next to the traces and open the list. `-Dtrace=false` skips tracing for raw speed.
 - **Headless by default.** The clients run inside the Lima VM on virtual displays (Xvfb), so nothing shows on the Mac, and Lima forwards the driver ports (9971+) back to the Mac. `-Dheaded=true` opens them on the Mac instead, slowed down so you can follow them.
 
