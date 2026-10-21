@@ -1,0 +1,14 @@
+{
+  "name": "oracle-forms-crud-ui-tests",
+  "private": true,
+  "description": "Black-box browser tests for the Orders form, driven through the UI only",
+  "scripts": {
+    "test": "playwright test",
+    "test:stack": "eval \"$(../stack.sh up ${STACK:-ui})\" && playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.64.1",
+    "@types/node": "^26.6.5",
+    "typescript": "^7.0.2"
+  }
+}
