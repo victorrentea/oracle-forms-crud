@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head('Audit Log')}"></head>
+<body>
+<nav th:replace="~{layout :: menu}"></nav>
+<main class="window">
+  <h1>Audit Log</h1>
+  <table class="block grid" id="audit">
+    <thead><tr><th>Id</th><th>Table</th><th>Row</th><th>Action</th><th>Old Values</th><th>New Values</th><th>Changed At</th><th>By</th></tr></thead>
+    <tbody>
+    <tr th:each="a : ${rows}">
+      <td th:text="${a.id}"></td>
+      <td th:text="${a.tableName}"></td>
+      <td th:text="${a.rowId}"></td>
+      <td th:text="${a.action}"></td>
+      <td th:text="${a.oldValues}"></td>
+      <td th:text="${a.newValues}"></td>
+      <td th:text="${#temporals.format(a.changedAt, 'yyyy-MM-dd HH:mm:ss')}"></td>
+      <td th:text="${a.changedBy}"></td>
+    </tr>
+    </tbody>
+  </table>
+</main>
+<div th:replace="~{layout :: status}"></div>
+</body>
+</html>

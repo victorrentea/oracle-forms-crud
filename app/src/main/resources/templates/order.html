@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head('Order')}"></head>
+<body>
+<nav th:replace="~{layout :: menu}"></nav>
+<main class="window">
+  <h1 th:text="${form.id == null} ? 'New Order' : 'Order ' + ${form.id}">Order</h1>
+  <form method="post" th:action="${form.id == null} ? '/orders' : '/orders/' + ${form.id}" class="block record">
+    <label for="customerId">Customer</label>
+    <select id="customerId" name="customerId" th:disabled="${form.id != null}">
+      <option value=""></option>
+      <option th:each="c : ${customers}" th:value="${c.id}" th:text="${c.name}"
+              th:selected="${form.customerId == c.id}"></option>
+      <option th:if="${order != null}" th:value="${order.customerId}" th:text="${order.customerName}" selected></option>
+    </select>
+    <label for="product">Product</label>
+    <input id="product" name="product" th:value="${form.product}">
+    <label for="quantity">Quantity</label>
+    <input id="quantity" name="quantity" class="num" th:value="${form.quantity}">
+    <label for="unitPrice">Unit Price</label>
+    <input id="unitPrice" name="unitPrice" class="num" th:value="${form.unitPrice}">
+    <th:block th:if="${order != null}">
+      <label for="discountPct">Discount %</label>
+      <input id="discountPct" class="num" readonly th:value="${#numbers.formatDecimal(order.discountPct, 1, 'NONE', 0, 'POINT')}">
+      <label for="total">Total</label>
+      <input id="total" class="num" readonly th:value="${#numbers.formatDecimal(order.total, 1, 'NONE', 2, 'POINT')}">
+      <label for="orderStatus">Status</label>
+      <input id="orderStatus" readonly th:value="${order.status}">
+    </th:block>
+    <div class="buttons">
+      <button type="submit">Save</button>
+    </div>
+  </form>
+  <div class="block buttons" th:if="${form.id != null}">
+    <form method="post" th:action="@{/orders/{id}/ship(id=${form.id})}"><button type="submit">Ship</button></form>
+    <form method="post" th:action="@{/orders/{id}/cancel(id=${form.id})}"><button type="submit">Cancel Order</button></form>
+    <form method="post" th:action="@{/orders/{id}/delete(id=${form.id})}"><button type="submit">Delete</button></form>
+  </div>
+</main>
+<div th:replace="~{layout :: status}"></div>
+</body>
+</html>

@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head('Customers')}"></head>
+<body>
+<nav th:replace="~{layout :: menu}"></nav>
+<main class="window">
+  <h1>Customers</h1>
+  <div class="block"><a class="button" href="/customers/new">New Customer</a></div>
+  <table class="block grid" id="customers">
+    <thead><tr><th>Id</th><th>Name</th><th>Credit Limit</th><th>Open Exposure</th><th>Active</th></tr></thead>
+    <tbody>
+    <tr th:each="c : ${customers}">
+      <td><a th:href="@{/customers/{id}(id=${c.id})}" th:text="${c.id}"></a></td>
+      <td th:text="${c.name}"></td>
+      <td class="num" th:text="${#numbers.formatDecimal(c.creditLimit, 1, 'NONE', 2, 'POINT')}"></td>
+      <td class="num" th:text="${#numbers.formatDecimal(c.exposure, 1, 'NONE', 2, 'POINT')}"></td>
+      <td th:text="${c.active}"></td>
+    </tr>
+    </tbody>
+  </table>
+</main>
+<div th:replace="~{layout :: status}"></div>
+</body>
+</html>

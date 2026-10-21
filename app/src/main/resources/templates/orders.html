@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head('Orders')}"></head>
+<body>
+<nav th:replace="~{layout :: menu}"></nav>
+<main class="window">
+  <h1>Orders</h1>
+  <form method="get" action="/orders" class="block query">
+    <label for="customerId">Customer</label>
+    <select id="customerId" name="customerId">
+      <option value=""></option>
+      <option th:each="c : ${customers}" th:value="${c.id}" th:text="${c.name}"
+              th:selected="${filter.customerId == c.id}"></option>
+    </select>
+    <label for="status">Status</label>
+    <select id="status" name="status">
+      <option value=""></option>
+      <option th:each="s : ${ {'NEW','SHIPPED','CANCELLED'} }" th:value="${s}" th:text="${s}"
+              th:selected="${s == status}"></option>
+    </select>
+    <label for="product">Product</label>
+    <input id="product" name="product" th:value="${filter.product}">
+    <button type="submit">Execute Query</button>
+    <a class="button" href="/orders/new">New Order</a>
+  </form>
+  <table class="block grid" id="orders">
+    <thead>
+    <tr><th>Id</th><th>Customer</th><th>Product</th><th>Qty</th><th>Unit Price</th><th>Disc %</th><th>Total</th><th>Status</th></tr>
+    </thead>
+    <tbody>
+    <tr th:each="o : ${orders}">
+      <td><a th:href="@{/orders/{id}(id=${o.id})}" th:text="${o.id}"></a></td>
+      <td th:text="${o.customerName}"></td>
+      <td th:text="${o.product}"></td>
+      <td class="num" th:text="${o.quantity}"></td>
+      <td class="num" th:text="${#numbers.formatDecimal(o.unitPrice, 1, 'NONE', 2, 'POINT')}"></td>
+      <td class="num" th:text="${#numbers.formatDecimal(o.discountPct, 1, 'NONE', 0, 'POINT')}"></td>
+      <td class="num" th:text="${#numbers.formatDecimal(o.total, 1, 'NONE', 2, 'POINT')}"></td>
+      <td th:text="${o.status}"></td>
+    </tr>
+    </tbody>
+  </table>
+  <p class="count"><span th:text="${#lists.size(orders)}"></span> record(s) retrieved</p>
+</main>
+<div th:replace="~{layout :: status}"></div>
+</body>
+</html>

@@ -1,0 +1,24 @@
+/* A nod to Oracle Forms 6i: grey canvas, sunken fields, a status bar at the bottom. */
+:root { color-scheme: light; }
+body { margin: 0; font: 13px Tahoma, Verdana, sans-serif; background: #d4d0c8; color: #000; }
+.menu { background: #0a246a; color: #fff; padding: 4px 8px; display: flex; gap: 16px; }
+.menu a { color: #fff; }
+.menu .app { font-weight: bold; }
+.window { margin: 12px; padding: 8px 12px 40px; border: 2px outset #fff; background: #d4d0c8; }
+h1 { font-size: 15px; margin: 4px 0 10px; }
+.block { margin: 8px 0; }
+.record { display: grid; grid-template-columns: 110px 260px; gap: 6px 10px; align-items: center; }
+.query { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+input, select { font: inherit; border: 2px inset #fff; background: #fff; padding: 2px 4px; }
+input[readonly] { background: #ece9d8; }
+.num { text-align: right; }
+button, .button { font: inherit; padding: 3px 12px; border: 2px outset #fff; background: #d4d0c8; color: #000;
+  text-decoration: none; cursor: pointer; }
+.buttons { display: flex; gap: 8px; grid-column: 1 / -1; }
+.buttons form { margin: 0; }
+.grid { border-collapse: collapse; background: #fff; }
+.grid th, .grid td { border: 1px solid #808080; padding: 2px 8px; }
+.grid th { background: #d4d0c8; }
+.status { position: fixed; bottom: 0; left: 0; right: 0; padding: 4px 8px; border-top: 2px inset #fff;
+  background: #d4d0c8; font-family: monospace; }
+.status .error { color: #a00000; font-weight: bold; }

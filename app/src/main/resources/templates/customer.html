@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head('Customer')}"></head>
+<body>
+<nav th:replace="~{layout :: menu}"></nav>
+<main class="window">
+  <h1 th:text="${form.id == null} ? 'New Customer' : 'Customer ' + ${form.id}">Customer</h1>
+  <form method="post" th:action="${form.id == null} ? '/customers' : '/customers/' + ${form.id}" class="block record">
+    <label for="name">Name</label>
+    <input id="name" name="name" th:value="${form.name}">
+    <label for="creditLimit">Credit Limit</label>
+    <input id="creditLimit" name="creditLimit" class="num" th:value="${form.creditLimit}">
+    <th:block th:if="${form.id != null}">
+      <label for="active">Active</label>
+      <input id="active" name="active" type="checkbox" value="Y" th:checked="${form.active == 'Y'}">
+    </th:block>
+    <div class="buttons"><button type="submit">Save</button></div>
+  </form>
+  <div class="block buttons" th:if="${form.id != null}">
+    <form method="post" th:action="@{/customers/{id}/delete(id=${form.id})}"><button type="submit">Delete</button></form>
+  </div>
+</main>
+<div th:replace="~{layout :: status}"></div>
+</body>
+</html>

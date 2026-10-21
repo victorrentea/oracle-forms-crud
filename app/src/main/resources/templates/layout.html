@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:fragment="head(title)">
+  <meta charset="utf-8">
+  <title th:text="${title}">Orders</title>
+  <link rel="stylesheet" href="/forms.css">
+</head>
+<body>
+<nav th:fragment="menu" class="menu">
+  <span class="app">ORDERS (FMB)</span>
+  <a href="/orders">Orders</a>
+  <a href="/customers">Customers</a>
+  <a href="/audit">Audit Log</a>
+</nav>
+<div th:fragment="status" class="status" role="status">
+  <span id="message" th:if="${error}" class="error" th:text="${error}"></span>
+  <span id="message" th:if="${error == null and message != null}" class="info" th:text="${message}"></span>
+  <span th:if="${error == null and message == null}">&nbsp;</span>
+</div>
+</body>
+</html>
