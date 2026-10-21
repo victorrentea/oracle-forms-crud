@@ -44,7 +44,12 @@ public class OrdersPage {
 
   /** The Forms message line at the bottom of the window. */
   public Locator message() {
-    return app.statusLine();
+    return app.messageLine();
+  }
+
+  /** "Record: n/m": which order the cursor is on, out of how many. */
+  public Locator recordIndicator() {
+    return app.recordIndicator();
   }
 
   public int orderCount() {

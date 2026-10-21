@@ -9,7 +9,7 @@ import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import ro.victorrentea.formsui.OrdersPage;
 import ro.victorrentea.formsui.pw.FormsApp;
-import ro.victorrentea.formsui.pw.Trace;
+import ro.victorrentea.formsui.pw.FormsPool;
 
 import java.util.Map;
 
@@ -20,9 +20,16 @@ public class OrdersSteps {
   private FormsApp app;
   private OrdersPage orders;
 
+  private Scenario scenario;
+
+  @io.cucumber.java.Before
+  public void remember(Scenario scenario) {
+    this.scenario = scenario;
+  }
+
   @Given("the Orders form is open")
   public void theOrdersFormIsOpen() {
-    app = FormsApp.launch(new Trace("cucumber"));
+    app = FormsPool.acquire(scenario.getName());
     orders = new OrdersPage(app);
   }
 
@@ -87,7 +94,7 @@ public class OrdersSteps {
   }
 
   @After
-  public void closeTheForm() {
-    if (app != null) app.close();
+  public void giveTheFormBack(Scenario scenario) {
+    if (app != null) FormsPool.release(app, !scenario.isFailed());
   }
 }

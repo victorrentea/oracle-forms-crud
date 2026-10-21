@@ -14,8 +14,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * @FormsTest gives each test method a fresh {@link FormsApp} (fresh client, fresh data), closes it
- * afterwards and writes the HTML trace to target/forms-report/.
+ * @FormsTest lends each test method a {@link FormsApp} from the {@link FormsPool} (its own worker:
+ * client + schema, freshly reset), gives it back afterwards and writes the HTML trace to
+ * target/forms-report/.
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
@@ -32,7 +33,7 @@ public @interface FormsTest {
 
     @Override
     public Object resolveParameter(ParameterContext p, ExtensionContext e) {
-      FormsApp app = FormsApp.launch(new Trace(e.getRequiredTestClass().getSimpleName() + "." + e.getRequiredTestMethod().getName()));
+      FormsApp app = FormsPool.acquire(e.getRequiredTestClass().getSimpleName() + "." + e.getRequiredTestMethod().getName());
       e.getStore(ExtensionContext.Namespace.GLOBAL).put("app", app);
       return app;
     }
@@ -43,7 +44,7 @@ public @interface FormsTest {
       if (app == null) return;
       Throwable failure = e.getExecutionException().orElse(null);
       String file = app.trace().write(failure == null, failure, failure == null ? null : app.screenshot());
-      app.close();
+      FormsPool.release(app, failure == null);
       synchronized (RESULTS) {
         RESULTS.add(new String[]{e.getDisplayName(), failure == null ? "PASSED" : "FAILED", file});
         Trace.writeIndex(RESULTS);

@@ -10,4 +10,4 @@ mkdir -p target
 [ -f target/frmsal.jar ] || curl -sf -o target/frmsal.jar "$SERVER/forms/java/frmsal.jar"
 [ -f driver/target/forms-driver.jar ] || driver/build.sh >/dev/null
 exec "$JAVA8/bin/java" -javaagent:driver/target/forms-driver.jar=${DRIVER_PORT:-9971} \
-  -jar target/frmsal.jar -url "$SERVER/forms/frmservlet?config=orders"
+  -jar target/frmsal.jar -url "$SERVER/forms/frmservlet?config=${FORMS_CONFIG:-orders}"

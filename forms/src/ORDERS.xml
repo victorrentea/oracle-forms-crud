@@ -4,6 +4,7 @@
     <Coordinate CharacterCellWidth="7" RealUnit="Point" DefaultFontScaling="true" CharacterCellHeight="14" CoordinateSystem="Real"/>
     <Trigger Name="WHEN-NEW-FORM-INSTANCE" TriggerText="go_block('ORDERS');&#10;execute_query;"/>
     <Trigger Name="KEY-COMMIT" TriggerText="commit_form;&#10;if :system.form_status = 'QUERY' then&#10;  execute_query;&#10;end if;"/>
+    <Trigger Name="KEY-CLRFRM" TriggerText="clear_form(no_validate, full_rollback);&#10;go_block('ORDERS');&#10;execute_query;"/>
     <Block Name="ORDERS" QueryDataSourceName="ORDERS" RecordsDisplayCount="10" ScrollbarCanvasName="CANVAS1"
            ShowScrollbar="true" ScrollbarXPosition="705" ScrollbarYPosition="40" ScrollbarWidth="12" ScrollbarLength="180"
            OrderByClause="ID" InsertAllowed="true" UpdateAllowed="true" DeleteAllowed="true" QueryAllowed="true">

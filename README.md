@@ -113,18 +113,26 @@ Mac (arm64)                                  Lima VM (vz + Rosetta, Ubuntu 24.04
 - **The form** is `forms/src/ORDERS.xml`. `forms/build-form.sh` converts it to `.fmb` with `frmxml2f`, then compiles it to `.fmx` with `frmcmp_batch`. The form is classic Forms: a multi-record block on `ORDERS`, `ON-INSERT/ON-UPDATE/ON-DELETE` triggers that call `orders_api`, and Ship/Cancel buttons. Ctrl+S commits.
 - **The client** is started by `forms/run-client.sh`. It uses the Forms Standalone Launcher on Oracle JDK 8, which is browser-less. Java Web Start also works, through OpenWebStart, at `http://localhost:9001/forms/frmservlet?config=orders`. Oracle's own `javaws` has no Apple Silicon build.
 - **The driver** is `forms/driver/`, a Java agent inside the client JVM. It reads the live component tree (`oracle.forms.ui.VTextField` cells, `VButton`s, the status bar) and posts keystrokes into the client's own event queue. The tests never take your mouse or keyboard, and the Forms window can stay in the background.
-- **The tests** are in `forms/ui-tests/`. They use a small Playwright-style layer over the driver, `forms/ui-tests/.../pw/`: `FormsApp` is the Page, plus `Locator`s, `expect(...).toHaveText/toContainText` with auto-wait, and a per-test HTML trace with a screenshot of the Forms window after every step. The Page Object `OrdersPage` speaks clerk language: `enterNewOrder(...)`, `save()`, `goToLine(2).cancelOrder()`, `line(4).total()`. Each test gets a fresh client on freshly reset data. The suite is 6 tests and takes ~30 s.
-- **Headless by default.** The client runs inside the Lima VM on a virtual display (Xvfb), so nothing shows on the Mac, and Lima forwards the driver port back to the Mac. `-Dheaded=true` opens it on the Mac instead, slowed down so you can follow it.
+- **The tests** are in `forms/ui-tests/`. They use a small Playwright-style layer over the driver, in `forms/ui-tests/.../pw/`:
+  - `FormsApp` plays the role of Playwright's Page, with `Locator`s and `expect(...).toHaveText/toContainText` that auto-wait.
+  - Each test writes an HTML trace (`-Dtrace=true` adds a screenshot after every key; a failure always gets one).
+  - The Page Object `OrdersPage` speaks clerk language: `enterNewOrder(...)`, `save()`, `goToLine(2).cancelOrder()`, `line(4).total()`.
+- **The Gherkin layer** on top: `features/orders.feature` runs through Cucumber 8. Every step attaches the Forms window to `target/cucumber-report.html`.
+- **Fast and parallel.** `FormsPool` keeps one long-lived client per worker (default 3: `-Dworkers`). A test borrows a worker and gets a clean slate in under a second: F8, the form's Clear Form, rolls back and re-queries; the worker's data is reset; F8 again. Each worker has its own schema (`APP1..APP3`, created by `forms/setup-workers.sh`) and its own `[ordersN]` config, so tests running side by side never see each other's orders. The 6 JUnit tests plus the 7 scenarios take ~17 s, down from ~76 s with a fresh client per test.
+- **Headless by default.** The clients run inside the Lima VM on virtual displays (Xvfb), so nothing shows on the Mac, and Lima forwards the driver ports (9971+) back to the Mac. `-Dheaded=true` opens them on the Mac instead, slowed down so you can follow them.
 
 ```bash
-cd forms/ui-tests && mvn test                      # headless; report: target/forms-report/index.html
-mvn test -Dheaded=true                             # watch it type on this Mac
+forms/setup-workers.sh 3                           # once: schemas APP1..3 + configs [orders1..3]
+cd forms/ui-tests && mvn test                      # headless, 3 in parallel
+mvn test -Dheaded=true -Dworkers=1                 # watch one client type on this Mac
 ```
 
-```java
-orders.enterNewOrder(1, "Bolt", "12", "10").save();
-expect(orders.message()).toContainText("FRM-40400: Transaction complete");
-expect(orders.line(4).total()).toHaveText("114");
+```gherkin
+Scenario Outline: Ordering more items earns a volume discount
+  When I enter a new order for customer 1: <qty> x "Bolt" at 10
+  And I save
+  Then the message line says "FRM-40400: Transaction complete: 1 records applied and saved."
+  And order line 4 shows a discount of <discount>% and a total of <total>
 ```
 
 Setup notes and gotchas from the install:

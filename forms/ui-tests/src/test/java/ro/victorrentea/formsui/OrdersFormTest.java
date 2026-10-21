@@ -22,7 +22,7 @@ class OrdersFormTest {
     expect(orders.line(1).product()).toHaveText("Widget");
     expect(orders.line(2).status()).toHaveText("SHIPPED");
     expect(orders.line(3).customer()).toHaveText("Globex");
-    expect(orders.message()).toHaveText("Record: 1/3");
+    expect(orders.recordIndicator()).toHaveText("Record: 1/3");
   }
 
   @Test
