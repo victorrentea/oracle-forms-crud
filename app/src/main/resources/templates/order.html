@@ -7,12 +7,12 @@
   <h1 th:text="${form.id == null} ? 'New Order' : 'Order ' + ${form.id}">Order</h1>
   <form method="post" th:action="${form.id == null} ? '/orders' : '/orders/' + ${form.id}" class="block record">
     <label for="customerId">Customer</label>
-    <select id="customerId" name="customerId" th:disabled="${form.id != null}">
+    <select id="customerId" name="customerId" th:if="${form.id == null}">
       <option value=""></option>
       <option th:each="c : ${customers}" th:value="${c.id}" th:text="${c.name}"
               th:selected="${form.customerId == c.id}"></option>
-      <option th:if="${order != null}" th:value="${order.customerId}" th:text="${order.customerName}" selected></option>
     </select>
+    <input id="customerId" th:if="${form.id != null}" readonly th:value="${order.customerName}">
     <label for="product">Product</label>
     <input id="product" name="product" th:value="${form.product}">
     <label for="quantity">Quantity</label>
