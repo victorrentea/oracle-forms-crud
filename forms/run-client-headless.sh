@@ -13,6 +13,8 @@ mkdir -p target
 [ -f driver/target/forms-driver.jar ] || driver/build.sh >/dev/null
 limactl shell forms mkdir -p "$DIR"
 limactl copy target/frmsal.jar driver/target/forms-driver.jar "forms:$DIR/"
-exec limactl shell forms bash -c "cd $DIR && exec xvfb-run -a -s '-screen 0 1280x800x24' \
+# FORMS_DISPLAY=:50 reuses a display you started yourself (e.g. to record it); default: a private Xvfb
+if [ -n "${FORMS_DISPLAY:-}" ]; then x="env DISPLAY=$FORMS_DISPLAY"; else x="xvfb-run -a -s '-screen 0 1280x800x24'"; fi
+exec limactl shell forms bash -c "cd $DIR && exec $x \
   /usr/lib/jvm/java-8-openjdk-arm64/bin/java -Djavax.accessibility.assistive_technologies=' ' \
   -javaagent:forms-driver.jar=$PORT -jar frmsal.jar -url 'http://127.0.0.1:9001/forms/frmservlet?config=$CONFIG'"
